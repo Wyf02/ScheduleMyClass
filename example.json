@@ -1,0 +1,128 @@
+[
+  {
+    "id": "demo_sem_01",
+    "name": "2025 春季 (J人生活版)",
+    "startHour": 7,
+    "endHour": 23,
+    "courses": [
+      {
+        "id": "c_morning_run",
+        "name": "🏃 晨跑 & 听播客",
+        "day": 1,
+        "startHour": 7,
+        "endHour": 7.5,
+        "credit": 0,
+        "serialNumber": "",
+        "notes": "保持有氧，开启元气满满的一天",
+        "isVisible": true
+      },
+      {
+        "id": "c_math_adv",
+        "name": "高等数学 (H)",
+        "day": 1,
+        "startHour": 8,
+        "endHour": 9.75,
+        "credit": 5,
+        "serialNumber": "MATH101",
+        "notes": "西区 3-201，记得带作业",
+        "isVisible": true
+      },
+      {
+        "id": "c_english_conflict",
+        "name": "英语视听说 (重叠演示)",
+        "day": 1,
+        "startHour": 8.5,
+        "endHour": 10,
+        "credit": 2,
+        "serialNumber": "ENG202",
+        "notes": "这门课和高数重叠，用于测试布局算法",
+        "isVisible": true
+      },
+      {
+        "id": "c_deep_work",
+        "name": "☕ 深度工作 / 敲代码",
+        "day": 2,
+        "startHour": 9,
+        "endHour": 11.5,
+        "credit": 0,
+        "serialNumber": "",
+        "notes": "关闭手机，专注开发 ScheduleMyClass",
+        "isVisible": true
+      },
+      {
+        "id": "c_gym_leg",
+        "name": "🏋️ 力量训练 (练腿)",
+        "day": 3,
+        "startHour": 18,
+        "endHour": 19.5,
+        "credit": 0,
+        "serialNumber": "",
+        "notes": "深蹲 5x5，硬拉 3x5",
+        "isVisible": true
+      },
+      {
+        "id": "c_cs_algo",
+        "name": "算法与数据结构",
+        "day": 4,
+        "startHour": 14,
+        "endHour": 16.5,
+        "credit": 4,
+        "serialNumber": "CS201",
+        "notes": "东区 A-101",
+        "isVisible": true
+      },
+      {
+        "id": "c_reading_night",
+        "name": "📖 周五复盘 & 阅读",
+        "day": 5,
+        "startHour": 20,
+        "endHour": 22,
+        "credit": 0,
+        "serialNumber": "",
+        "notes": "整理本周待办，阅读《原子习惯》",
+        "isVisible": true
+      }
+    ]
+  },
+  {
+    "id": "demo_sem_02",
+    "name": "2024 秋季 (纯课表)",
+    "startHour": 8,
+    "endHour": 21,
+    "courses": [
+      {
+        "id": "c_history",
+        "name": "中国近代史纲要",
+        "day": 2,
+        "startHour": 8,
+        "endHour": 9.5,
+        "credit": 2,
+        "serialNumber": "",
+        "notes": "开卷考，记得买书",
+        "isVisible": true
+      },
+      {
+        "id": "c_physics",
+        "name": "大学物理 B",
+        "day": 2,
+        "startHour": 10,
+        "endHour": 12,
+        "credit": 4,
+        "serialNumber": "",
+        "notes": "",
+        "isVisible": true
+      },
+      {
+        "id": "c_cpp",
+        "name": "C++ 程序设计",
+        "day": 4,
+        "startHour": 14,
+        "endHour": 17,
+        "credit": 3,
+        "serialNumber": "",
+        "notes": "实验课在机房",
+        "isVisible": true
+      }
+    ]
+  }
+]

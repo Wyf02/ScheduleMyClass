@@ -38,8 +38,12 @@
 在手机上，底部列表采用 **“抽屉式”设计**。点击标题栏即可展开编辑，再次点击收起以查看课表。
 表格支持横向滑动，并在超小屏幕上自动优化按钮布局。
 
-<img src="docs/demo-mobile.png" width="300" alt="手机端演示">
-
+<p align="center">
+  <img src="docs/demo-mobile0.png" width="120" alt="演示图1" style="margin-right: 10px;">
+  <img src="docs/demo-mobile1.png" width="120" alt="演示图2" style="margin-right: 10px;">
+  <img src="docs/demo-mobile2.png" width="120" alt="演示图3">
+  <img src="docs/demo-mobile.png" width="120" alt="演示图3">
+</p>
 ---
 
 ## 📖 使用教程
@@ -60,7 +64,14 @@
 3. 系统会自动生成 `.ics` 文件。
 4. **iPhone 用户**： 目前手机端我没有找到好的方式去引入ics,目前看来只能你给自己的邮箱发邮件，把ics文件作为附件发过去，然后你在手机上接收它，它才会被添加到你的日历。 mac端直接下载文件拖拽到日历就行。
 
-![日历导出](docs/demo-calendar.png)
+![导出](docs/calenda.png)
+<p align="center">
+  <img src="docs/calenda-mobile0.png" width="120" alt="演示图1" style="margin-right: 10px;">
+  <img src="docs/calenda-mobile1.png" width="120" alt="演示图2" style="margin-right: 10px;">
+  <img src="docs/calenda-mobile2.png" width="120" alt="演示图3">
+  <img src="docs/calenda-mobile3.png" width="120" alt="演示图4">
+   <img src="docs/calenda-mobile4.png" width="120" alt="演示图5">
+</p>
 
 ### 第三步：数据备份
 **⚠️ 注意：清理浏览器缓存会丢失数据！**
@@ -71,45 +82,37 @@
 ### 可选：AI协作
 可自行撰写提示词，并向您常用的AI发送您的pdf安排文档，让它以如下形式输出
 
+### 提示词示例：
+# Role
+你是一个专业的课程表数据转换助手。你的任务是提取我提供的课程表文件（PDF/图片/文本）中的信息，并将其转换为特定的 JSON 格式。
+
+# Goal
+输出一个符合下方定义的 JSON 数据，可以直接用于 "ScheduleMyClass" 应用程序导入。
+
+# JSON Structure Definition
+请严格遵守以下 JSON 结构（包含学期信息和课程列表）：
+
 ```json
 [
   {
-    "id": "ais1hs62z",
-    "name": "第二学期",
+    "id": "generate_unique_string_id", // 随机生成的唯一字符串
+    "name": "2025 春季学期", // 根据文件内容推断学期名称，若未知则使用默认值
+    "startHour": 8, // 视图默认开始时间 (通常为8)
+    "endHour": 22, // 视图默认结束时间 (通常为22)
     "courses": [
       {
-        "id": "qufial81k",
-        "name": "新课程",
-        "day": 1,
-        "startHour": 8,
-        "endHour": 9.5,
-        "credit": 2,
-        "serialNumber": "",
-        "notes": "",
-        "isVisible": true
+        "id": "generate_unique_string_id", // 随机生成的唯一字符串
+        "name": "课程名称",
+        "day": 1, // 1=周一, 2=周二, ..., 7=周日
+        "startHour": 8.0, // ⚠️ 重要：必须转换为十进制小时 (例如 8:30 = 8.5, 9:45 = 9.75)
+        "endHour": 9.75, // ⚠️ 重要：必须转换为十进制小时
+        "credit": 2, // 学分，如果没有则填 0
+        "serialNumber": "CS101", // 课程代码，如果没有则留空
+        "notes": "教室: 3-201, 教师: 王教授", // 将教室、教师等额外信息放入备注
+        "isVisible": true // 默认为 true
       }
-    ],
-    "startHour": 8,
-    "endHour": 22
-  },
-  {
-    "id": "ibq6fmuup",
-    "name": "2026第一学期",
-    "courses": [
-      {
-        "id": "z42el2bb8",
-        "name": "锻炼",
-        "day": 1,
-        "startHour": 8,
-        "endHour": 9.5,
-        "credit": 2,
-        "serialNumber": "",
-        "notes": "XX体育馆",
-        "isVisible": true
-      }
-    ],
-    "startHour": 8,
-    "endHour": 22
+      // ... 更多课程
+    ]
   }
 ]
 ``` 
