@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-
+import { createEvents, EventAttributes } from 'ics';
 // --- 1. 类型定义 (增加 startHour 和 endHour) ---
 
 interface Course {
@@ -180,7 +180,76 @@ export default function CourseScheduler() {
     link.download = `课表备份_${new Date().toISOString().split('T')[0]}.json`;
     link.click();
   };
+ // --- 导出 ICS 日历功能 ---
+  const handleExportICS = async () => {
+    // 1. 获取学期范围
+    const startDateStr = prompt("请输入本学期【第一周的周一】日期 (格式 YYYY-MM-DD):", new Date().toISOString().split('T')[0]);
+    if (!startDateStr) return;
+    
+    const endDateStr = prompt("请输入本学期【最后一周的周日】日期 (格式 YYYY-MM-DD):", "");
+    if (!endDateStr) return;
 
+    const semesterStart = new Date(startDateStr);
+    const semesterEnd = new Date(endDateStr);
+
+    if (isNaN(semesterStart.getTime()) || isNaN(semesterEnd.getTime())) {
+      alert("日期格式错误，请使用 2025-09-01 这种格式");
+      return;
+    }
+
+    // 2. 准备事件数据
+    const events: EventAttributes[] = [];
+    
+    currentCourses.forEach(course => {
+      if (!course.isVisible) return; // 不导出的课程跳过
+
+      // 计算这门课在第一周的具体日期
+      // course.day: 1=周一, 2=周二...
+      // 第一周周一的日期 + (course.day - 1) 天
+      const firstClassDate = new Date(semesterStart);
+      firstClassDate.setDate(semesterStart.getDate() + (course.day - 1));
+
+      // 转换时间：例如 9.5 -> [9, 30]
+      const startH = Math.floor(course.startHour);
+      const startM = Math.round((course.startHour - startH) * 60);
+      
+      // 持续时间 (分钟)
+      const durationMinutes = Math.round((course.endHour - course.startHour) * 60);
+      const duration = { hours: Math.floor(durationMinutes / 60), minutes: durationMinutes % 60 };
+
+      // 构建循环规则 (RRULE)
+      // FREQ=WEEKLY;UNTIL=20250130T000000Z
+      // ics 库只需要我们提供 until 日期即可
+      
+      events.push({
+        start: [firstClassDate.getFullYear(), firstClassDate.getMonth() + 1, firstClassDate.getDate(), startH, startM],
+        duration: duration,
+        title: course.name,
+        description: `备注: ${course.notes || '无'}\n学分: ${course.credit}`,
+        location: "本地课表导出",
+        recurrenceRule: `FREQ=WEEKLY;UNTIL=${semesterEnd.toISOString().replace(/[-:]/g, '').split('.')[0]}Z`,
+        busyStatus: 'BUSY'
+      });
+    });
+
+    // 3. 生成并下载文件
+    createEvents(events, (error, value) => {
+      if (error) {
+        console.error(error);
+        alert("生成日历文件失败");
+        return;
+      }
+      
+      const blob = new Blob([value], { type: "text/calendar;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${activeSemester?.name || '课表'}.ics`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+  };
   const fileInputRef = useRef<HTMLInputElement>(null);
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -244,22 +313,47 @@ export default function CourseScheduler() {
       {/* 顶部控制栏 */}
       <div className="bg-white border-b shadow-sm z-20 flex-shrink-0"> {/* flex-shrink-0 防止被挤压 */}
         
-        {/* 第一行：标题 + 备份按钮 */}
-        <div className="p-3 flex flex-col md:flex-row justify-between items-center gap-3 border-b border-gray-100">
-          <h1 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-            📅 本地课表
-            {/* 手机上隐藏这个长标签，省空间 */}
-            <span className="hidden md:inline text-xs font-normal text-gray-400 bg-gray-100 px-2 py-0.5 rounded">隐私安全: 本地存储</span>
-          </h1>
-          <div className="flex gap-2 w-full md:w-auto justify-center">
-            <button onClick={handleExport} className="flex-1 md:flex-none px-3 py-1 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200 whitespace-nowrap">
-              📥 备份
-            </button>
-            <button onClick={() => fileInputRef.current?.click()} className="flex-1 md:flex-none px-3 py-1 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200 whitespace-nowrap">
-              📤 恢复
-            </button>
-            <input type="file" ref={fileInputRef} className="hidden" accept=".json" onChange={handleImport} />
+        {/* 第一行：标题 + 备份按钮 (手机端优化：一行显示) */}
+        <div className="p-3 flex flex-row items-center justify-between border-b border-gray-100 gap-2">
+          
+          {/* 左侧：标题 + 按钮 (紧挨着) */}
+          <div className="flex items-center gap-3 overflow-hidden">
+            <h1 className="text-lg font-bold text-gray-800 whitespace-nowrap flex-shrink-0">
+              📅 本地课表
+            </h1>
+            
+            {/* 按钮组：直接放在标题旁边 */}
+            <div className="flex gap-2">
+              <button 
+                onClick={handleExport} 
+                className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200 whitespace-nowrap flex items-center gap-1"
+                title="备份数据"
+              >
+                备份 <span className="hidden sm:inline">📥</span> {/* 极小屏幕只显图标 */}
+              </button>
+              
+              <button 
+                onClick={() => fileInputRef.current?.click()} 
+                className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200 whitespace-nowrap flex items-center gap-1"
+                title="恢复数据"
+              >
+                恢复 <span className="hidden sm:inline">📤</span>
+              </button>
+              <input type="file" ref={fileInputRef} className="hidden" accept=".json" onChange={handleImport} />
+            </div>
+            <button 
+                onClick={handleExportICS} 
+                className="px-2 py-1 bg-blue-50 text-blue-600 border border-blue-200 rounded text-xs hover:bg-blue-100 whitespace-nowrap flex items-center gap-1"
+                title="导出到手机日历"
+              >
+                导出ics日历
+              </button>
           </div>
+
+          {/* 右侧：隐私标签 (手机上隐藏，电脑上显示) */}
+          <span className="hidden md:inline text-xs font-normal text-gray-400 bg-gray-100 px-2 py-0.5 rounded flex-shrink-0">
+            隐私安全: 本地存储
+          </span>
         </div>
 
         {/* 第二行：学期操作 (改为自动换行 flex-wrap) */}
@@ -293,14 +387,14 @@ export default function CourseScheduler() {
             </div>
           </div>
 
-          <div className="flex gap-2 w-full md:w-auto mt-2 md:mt-0">
+          <div className="flex gap-2 w-full md:w-auto  md:mt-0">
              {/* 这里的按钮加上 flex-1 让它们在手机上平分宽度 */}
             <button onClick={renameSemester} className="flex-1 md:flex-none text-center px-2 py-1 text-blue-600 border border-blue-200 rounded text-xs hover:bg-blue-50">重命名</button>
             <button onClick={deleteSemester} className="flex-1 md:flex-none text-center px-2 py-1 text-red-500 border border-red-200 rounded text-xs hover:bg-red-50 whitespace-nowrap">
               删除
             </button>
             <button onClick={addSemester} className="flex-1 md:flex-none justify-center px-3 py-1 bg-green-100 text-green-700 border border-green-200 rounded hover:bg-green-200 flex items-center gap-1 whitespace-nowrap">
-              ✨ 新学期
+              ✨ 增加学期
             </button>
             <button onClick={addCourse} className="flex-1 md:flex-none justify-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 shadow-sm flex items-center gap-1 whitespace-nowrap">
               + 添加
