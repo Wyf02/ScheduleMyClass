@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ] # 确保你的主分支叫 main，如果是 master 就改一下
+    branches: [ main ]
 
 permissions:
   contents: write
@@ -16,6 +16,7 @@ jobs:
 
       - name: Install and Build
         run: |
+          rm package-lock.json
           npm install
           npm run build
 
