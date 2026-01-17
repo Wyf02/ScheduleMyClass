@@ -239,58 +239,67 @@ export default function CourseScheduler() {
     <div className="h-screen flex flex-col bg-gray-50 text-sm font-sans">
       
       {/* 顶部控制栏 */}
-      <div className="bg-white border-b shadow-sm z-20">
-        <div className="p-3 flex justify-between items-center border-b border-gray-100">
+      {/* 顶部控制栏 */}
+      <div className="bg-white border-b shadow-sm z-20 flex-shrink-0"> {/* flex-shrink-0 防止被挤压 */}
+        
+        {/* 第一行：标题 + 备份按钮 */}
+        <div className="p-3 flex flex-col md:flex-row justify-between items-center gap-3 border-b border-gray-100">
           <h1 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-            📅 本地课表管理器
-            <span className="text-xs font-normal text-gray-400 bg-gray-100 px-2 py-0.5 rounded">本地存储</span>
+            📅 本地课表
+            {/* 手机上隐藏这个长标签，省空间 */}
+            <span className="hidden md:inline text-xs font-normal text-gray-400 bg-gray-100 px-2 py-0.5 rounded">隐私安全: 本地存储</span>
           </h1>
-          <div className="flex gap-2">
-            <button onClick={handleExport} className="px-3 py-1 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200">📥 备份</button>
-            <button onClick={() => fileInputRef.current?.click()} className="px-3 py-1 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200">📤 恢复</button>
+          <div className="flex gap-2 w-full md:w-auto justify-center">
+            <button onClick={handleExport} className="flex-1 md:flex-none px-3 py-1 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200 whitespace-nowrap">
+              📥 备份
+            </button>
+            <button onClick={() => fileInputRef.current?.click()} className="flex-1 md:flex-none px-3 py-1 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200 whitespace-nowrap">
+              📤 恢复
+            </button>
             <input type="file" ref={fileInputRef} className="hidden" accept=".json" onChange={handleImport} />
           </div>
         </div>
 
-        <div className="p-3 flex items-center justify-between bg-blue-50/50 flex-wrap gap-2">
-          <div className="flex items-center gap-3">
-            <label className="text-gray-600 font-medium">当前学期：</label>
+        {/* 第二行：学期操作 (改为自动换行 flex-wrap) */}
+        <div className="p-3 flex flex-wrap items-center justify-between gap-3 bg-blue-50/50">
+          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+            <label className="text-gray-600 font-medium whitespace-nowrap">学期：</label>
             <select 
               value={activeSemesterId} 
               onChange={(e) => setActiveSemesterId(e.target.value)}
-              className="border border-blue-200 rounded px-2 py-1 text-blue-900 font-bold bg-white outline-none"
+              className="flex-1 md:flex-none border border-blue-200 rounded px-2 py-1 text-blue-900 font-bold bg-white outline-none min-w-[120px]"
             >
               {semesters.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>
             
-            {/* ✅ 新增：时间范围设置 */}
-            <div className="flex items-center gap-1 ml-4 text-gray-600 bg-white px-2 py-1 rounded border border-blue-100">
-              <span className="text-xs">视图范围:</span>
+            {/* 时间范围设置 (手机上稍微缩小点) */}
+            <div className="flex items-center gap-1 text-gray-600 bg-white px-2 py-1 rounded border border-blue-100 ml-auto md:ml-2">
+              <span className="text-xs text-gray-400">时间:</span>
               <input 
                 type="number" 
                 value={currentStartHour} 
                 onChange={(e) => updateSemesterConfig('startHour', Number(e.target.value))}
-                className="w-12 text-center border rounded bg-gray-50 text-xs py-0.5"
-                min="0" max="23"
+                className="w-8 text-center border rounded bg-gray-50 text-xs py-0.5"
               />
               <span className="text-xs">-</span>
               <input 
                 type="number" 
                 value={currentEndHour} 
                 onChange={(e) => updateSemesterConfig('endHour', Number(e.target.value))}
-                className="w-12 text-center border rounded bg-gray-50 text-xs py-0.5"
-                min="1" max="24"
+                className="w-8 text-center border rounded bg-gray-50 text-xs py-0.5"
               />
-              <span className="text-xs">点</span>
             </div>
-
-            <button onClick={renameSemester} className="text-blue-600 underline text-xs hover:text-blue-800 ml-2">重命名</button>
-            <button onClick={deleteSemester} className="text-red-400 underline text-xs hover:text-red-600 ml-1">删除</button>
           </div>
 
-          <div className="flex gap-2">
-            <button onClick={addSemester} className="px-3 py-1 bg-green-100 text-green-700 border border-green-200 rounded hover:bg-green-200 flex items-center gap-1">✨ 新学期</button>
-            <button onClick={addCourse} className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 shadow-sm flex items-center gap-1">+ 添加课程</button>
+          <div className="flex gap-2 w-full md:w-auto mt-2 md:mt-0">
+             {/* 这里的按钮加上 flex-1 让它们在手机上平分宽度 */}
+            <button onClick={renameSemester} className="flex-1 md:flex-none text-center px-2 py-1 text-blue-600 border border-blue-200 rounded text-xs hover:bg-blue-50">重命名</button>
+            <button onClick={addSemester} className="flex-1 md:flex-none justify-center px-3 py-1 bg-green-100 text-green-700 border border-green-200 rounded hover:bg-green-200 flex items-center gap-1 whitespace-nowrap">
+              ✨ 新学期
+            </button>
+            <button onClick={addCourse} className="flex-1 md:flex-none justify-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 shadow-sm flex items-center gap-1 whitespace-nowrap">
+              + 添加
+            </button>
           </div>
         </div>
       </div>
@@ -357,47 +366,52 @@ export default function CourseScheduler() {
       </div>
 
       {/* 底部：课程编辑列表 */}
-      <div className="h-[35%] bg-white border-t overflow-y-auto p-4">
-        <table className="w-full text-left text-xs">
-          <thead className="bg-gray-100 text-gray-600 sticky top-0 z-10">
-            <tr>
-              <th className="p-2 w-10">展示</th>
-              <th className="p-2">课程名称</th>
-              <th className="p-2 w-16">周几</th>
-              <th className="p-2 w-24">开始</th>
-              <th className="p-2 w-24">结束</th>
-              <th className="p-2 w-12">学分</th>
-              <th className="p-2">备注 (失去焦点自动保存)</th>
-              <th className="p-2 w-12">操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentCourses.map(course => (
-              <tr key={course.id} className="border-b hover:bg-blue-50 transition-colors">
-                <td className="p-2 text-center">
-                  <input type="checkbox" checked={course.isVisible} onChange={(e) => updateCourse(course.id, 'isVisible', e.target.checked)} />
-                </td>
-                <td className="p-2"><input value={course.name} onChange={e => updateCourse(course.id, 'name', e.target.value)} className="w-full border rounded px-1 py-1" /></td>
-                <td className="p-2">
-                  <select value={course.day} onChange={e => updateCourse(course.id, 'day', Number(e.target.value))} className="border rounded py-1">
-                    {days.map((d, i) => <option key={i} value={i+1}>{d}</option>)}
-                  </select>
-                </td>
-                <td className="p-2">
-                  <input type="time" value={formatTime(course.startHour)} onChange={e => updateCourse(course.id, 'startHour', timeStrToDecimal(e.target.value))} className="w-full border rounded px-1 py-1" />
-                </td>
-                <td className="p-2">
-                  <input type="time" value={formatTime(course.endHour)} onChange={e => updateCourse(course.id, 'endHour', timeStrToDecimal(e.target.value))} className="w-full border rounded px-1 py-1" />
-                </td>
-                <td className="p-2"><input type="number" value={course.credit} onChange={e => updateCourse(course.id, 'credit', Number(e.target.value))} className="w-full border rounded px-1 py-1" /></td>
-                <td className="p-2">
-                  <input value={course.notes} onChange={e => updateCourse(course.id, 'notes', e.target.value)} placeholder="备注..." className="w-full border rounded px-1 py-1 text-gray-600" />
-                </td>
-                <td className="p-2"><button onClick={() => deleteCourse(course.id)} className="text-red-500 hover:text-red-700">×</button></td>
+      <div className="h-[40%] bg-white border-t flex flex-col">
+        <div className="p-2 bg-gray-50 border-b text-xs text-gray-500 flex justify-between items-center">
+          <span className="font-bold">📝 课程管理列表</span>
+          <span className="md:hidden text-gray-400">(表格可左右滑动编辑 →)</span>
+        </div>
+        
+        {/* 关键修改：添加 overflow-x-auto 让表格可横向滚动 */}
+        <div className="flex-1 overflow-auto w-full">
+          <table className="w-full text-left text-xs min-w-[800px]"> {/* min-w-[800px] 强制表格不折叠 */}
+            <thead className="bg-gray-100 text-gray-600 sticky top-0 z-10 shadow-sm">
+              <tr>
+                <th className="p-2 w-10 text-center">👁️</th>
+                <th className="p-2 min-w-[120px]">课程名称</th> {/* 设定最小宽度防止挤压 */}
+                <th className="p-2 w-20">周几</th>
+                <th className="p-2 w-24">开始</th>
+                <th className="p-2 w-24">结束</th>
+                <th className="p-2 w-12">学分</th>
+                <th className="p-2 min-w-[150px]">备注</th>
+                <th className="p-2 w-10">删</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {currentCourses.map(course => (
+                <tr key={course.id} className="border-b hover:bg-blue-50 transition-colors">
+                  {/* ...这里面的 td 内容保持不变... */}
+                  {/* 只是建议给 input 加上 min-w，比如: */}
+                  <td className="p-2 text-center">
+                    <input type="checkbox" checked={course.isVisible} onChange={(e) => updateCourse(course.id, 'isVisible', e.target.checked)} className="w-4 h-4" />
+                  </td>
+                  <td className="p-2"><input value={course.name} onChange={e => updateCourse(course.id, 'name', e.target.value)} className="w-full border rounded px-1 py-1 min-w-[100px]" /></td>
+                  <td className="p-2">
+                    <select value={course.day} onChange={e => updateCourse(course.id, 'day', Number(e.target.value))} className="border rounded py-1 w-full">
+                      {days.map((d, i) => <option key={i} value={i+1}>{d}</option>)}
+                    </select>
+                  </td>
+                  {/* 时间选择器保持原样，它们在手机上会自动弹出滚轮选择 */}
+                  <td className="p-2"><input type="time" value={formatTime(course.startHour)} onChange={e => updateCourse(course.id, 'startHour', timeStrToDecimal(e.target.value))} className="w-full border rounded px-1 py-1" /></td>
+                  <td className="p-2"><input type="time" value={formatTime(course.endHour)} onChange={e => updateCourse(course.id, 'endHour', timeStrToDecimal(e.target.value))} className="w-full border rounded px-1 py-1" /></td>
+                  <td className="p-2"><input type="number" value={course.credit} onChange={e => updateCourse(course.id, 'credit', Number(e.target.value))} className="w-full border rounded px-1 py-1 w-12" /></td>
+                  <td className="p-2"><input value={course.notes} onChange={e => updateCourse(course.id, 'notes', e.target.value)} placeholder="..." className="w-full border rounded px-1 py-1 text-gray-600 min-w-[100px]" /></td>
+                  <td className="p-2"><button onClick={() => deleteCourse(course.id)} className="text-red-500 font-bold p-2">×</button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
