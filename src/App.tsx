@@ -294,6 +294,9 @@ export default function CourseScheduler() {
           <div className="flex gap-2 w-full md:w-auto mt-2 md:mt-0">
              {/* 这里的按钮加上 flex-1 让它们在手机上平分宽度 */}
             <button onClick={renameSemester} className="flex-1 md:flex-none text-center px-2 py-1 text-blue-600 border border-blue-200 rounded text-xs hover:bg-blue-50">重命名</button>
+            <button onClick={deleteSemester} className="flex-1 md:flex-none text-center px-2 py-1 text-red-500 border border-red-200 rounded text-xs hover:bg-red-50 whitespace-nowrap">
+              删除
+            </button>
             <button onClick={addSemester} className="flex-1 md:flex-none justify-center px-3 py-1 bg-green-100 text-green-700 border border-green-200 rounded hover:bg-green-200 flex items-center gap-1 whitespace-nowrap">
               ✨ 新学期
             </button>
