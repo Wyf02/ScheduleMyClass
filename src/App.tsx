@@ -348,6 +348,15 @@ export default function CourseScheduler() {
               >
                 导出ics日历
               </button>
+              <a 
+                href="https://github.com/Wyf02/ScheduleMyClass" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="px-2 py-1 bg-indigo-50 text-indigo-600 border border-indigo-200 rounded text-xs hover:bg-indigo-100 whitespace-nowrap flex items-center gap-1 no-underline"
+                title="查看使用说明书"
+              >
+                教程<span className="hidden sm:inline">📖 </span>
+              </a>
           </div>
 
           {/* 右侧：隐私标签 (手机上隐藏，电脑上显示) */}
