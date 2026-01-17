@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { createEvents, EventAttributes } from 'ics';
+import { createEvents, type EventAttributes } from 'ics';
 // --- 1. 类型定义 (增加 startHour 和 endHour) ---
 
 interface Course {
