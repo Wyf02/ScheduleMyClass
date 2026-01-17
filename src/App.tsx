@@ -117,6 +117,8 @@ export default function CourseScheduler() {
     }
     return '';
   });
+  // --- UI 状态：控制底部列表是否展开 ---
+  const [isListExpanded, setIsListExpanded] = useState(false);
 
   useEffect(() => {
     if (!activeSemesterId && semesters.length > 0) {
@@ -306,82 +308,130 @@ export default function CourseScheduler() {
           </div>
         </div>
       </div>
-
-      {/* 中间：周视图 */}
-      <div className="flex-1 overflow-y-auto relative p-4 bg-white">
-        <div className="grid grid-cols-8 gap-2 min-w-[800px]">
-          {/* 时间轴 */}
-          <div className="col-span-1 relative h-[600px] border-r">
-             {Array.from({ length: totalHours + 1 }).map((_, i) => (
-               <React.Fragment key={i}>
-                 <div 
-                    className="absolute border-t border-gray-200 w-[800%] z-[5] pointer-events-none"
-                    style={{ top: `${(i / totalHours) * 100}%`, left: 0 }}
-                 />
-                 <div 
-                    className="absolute w-full text-right pr-2 text-xs text-gray-400 -mt-2 z-[6]" 
-                    style={{ top: `${(i / totalHours) * 100}%` }}
-                 >
-                   <span className="bg-white/80 px-1">{currentStartHour + i}:00</span>
-                 </div>
-               </React.Fragment>
-             ))}
+{/* 中间：周视图 (修复版：网格线分列渲染，杜绝穿模) */}
+      <div className="flex-1 overflow-auto relative bg-white touch-pan-x touch-pan-y">
+        
+        <div className="min-w-[800px] md:min-w-full">
+          
+          {/* --- 1. 顶部表头行 (Sticky Top) --- */}
+          <div className="grid grid-cols-8 sticky top-0 z-40 border-b border-gray-200 bg-gray-50 shadow-sm">
+            {/* 左上角死角 */}
+            <div className="col-span-1 sticky left-0 top-0 z-50 bg-gray-100 border-r border-gray-200 h-10 flex items-center justify-center text-xs font-bold text-gray-500">
+              时 / 周
+            </div>
+            {/* 星期表头 */}
+            {days.map((dayName) => (
+              <div key={`header-${dayName}`} className="col-span-1 h-10 flex items-center justify-center text-xs font-bold text-gray-600 border-r border-gray-100 bg-gray-50">
+                {dayName}
+              </div>
+            ))}
           </div>
 
-          {/* 课程列 */}
-          {days.map((dayName, dayIndex) => {
-            const dayCourses = currentCourses.filter(c => c.day === dayIndex + 1 && c.isVisible);
-            const layoutStyles = getDailyLayout(dayCourses);
+          {/* --- 2. 下方内容区域 --- */}
+          <div className="grid grid-cols-8 pt-5">
 
-            return (
-              <div key={dayName} className="col-span-1 relative h-[600px] bg-gray-50/50 rounded border border-gray-100">
-                <div className="text-center text-xs font-bold text-gray-500 py-2 border-b">{dayName}</div>
-                {dayCourses.map(course => {
-                  // ✅ 渲染位置根据当前的 currentStartHour 动态计算
-                  const top = ((course.startHour - currentStartHour) / totalHours) * 100;
-                  const height = ((course.endHour - course.startHour) / totalHours) * 100;
-                  const overlapStyle = layoutStyles[course.id] || { left: '0%', width: '100%' };
+            {/* 左侧时间轴 (Sticky Left) */}
+            <div className="col-span-1 sticky left-0 z-30 bg-white border-r border-gray-200 h-[600px]">
+               {Array.from({ length: totalHours + 1 }).map((_, i) => (
+                 <React.Fragment key={i}>
+               
+                   <div 
+                      className="absolute border-t border-gray-200 w-full pointer-events-none"
+                      style={{ top: `${(i / totalHours) * 100}%`, left: 0 }}
+                   />
+                   <div 
+                      className="absolute w-full text-right pr-2 text-xs text-gray-400 -mt-2 font-medium" 
+                      style={{ top: `${(i / totalHours) * 100}%` }}
+                   >
+                     <span className="bg-white pl-2 pr-2 relative">
+                       {currentStartHour + i}:00
+                     </span>
+                   </div>
+                 </React.Fragment>
+               ))}
+            </div>
 
-                  return (
+            {/* 课程内容列 */}
+            {days.map((dayName, dayIndex) => {
+              const dayCourses = currentCourses.filter(c => c.day === dayIndex + 1 && c.isVisible);
+              const layoutStyles = getDailyLayout(dayCourses);
+
+              return (
+                <div key={`body-${dayName}`} className="col-span-1 relative h-[600px] border-r border-gray-50 bg-white">
+                  
+                  {/* ✅ 修复点2：每一列自己画背景横线 */}
+                  {Array.from({ length: totalHours + 1 }).map((_, i) => (
                     <div 
-                      key={course.id}
-                      className="absolute rounded p-1.5 text-xs bg-blue-100 text-blue-900 border-l-4 border-blue-500 overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform shadow-sm group"
-                      style={{ 
-                        top: `${top}%`, 
-                        height: `${height}%`,
-                        left: overlapStyle.left,
-                        width: overlapStyle.width,
-                        zIndex: 10
-                      }}
-                      title={`${course.name} (${formatTime(course.startHour)} - ${formatTime(course.endHour)})`}
-                    >
-                      <div className="font-bold leading-tight truncate">{course.name}</div>
-                      <div className="opacity-80 scale-90 origin-left mt-1 truncate">
-                        {formatTime(course.startHour)} - {formatTime(course.endHour)}
+                      key={`line-${i}`}
+                      className="absolute border-t border-gray-100 w-full pointer-events-none"
+                      style={{ top: `${(i / totalHours) * 100}%`, left: 0, zIndex: 0 }}
+                    />
+                  ))}
+
+                  {/* 课程卡片 */}
+                  {dayCourses.map(course => {
+                    const top = ((course.startHour - currentStartHour) / totalHours) * 100;
+                    const height = ((course.endHour - course.startHour) / totalHours) * 100;
+                    const overlapStyle = layoutStyles[course.id] || { left: '0%', width: '100%' };
+
+                    return (
+                      <div 
+                        key={course.id}
+                        className="absolute rounded p-1.5 text-xs bg-blue-100 text-blue-900 border-l-4 border-blue-500 overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform shadow-sm group z-10"
+                        style={{ 
+                          top: `${top}%`, 
+                          height: `${height}%`,
+                          left: overlapStyle.left,
+                          width: overlapStyle.width,
+                        }}
+                        title={`${course.name}`}
+                      >
+                        <div className="font-bold leading-tight truncate">{course.name}</div>
+                        <div className="opacity-80 scale-90 origin-left mt-1 truncate">
+                          {formatTime(course.startHour)} - {formatTime(course.endHour)}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })}
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {/* 底部：课程编辑列表 */}
-      <div className="h-[40%] bg-white border-t flex flex-col">
-        <div className="p-2 bg-gray-50 border-b text-xs text-gray-500 flex justify-between items-center">
-          <span className="font-bold">📝 课程管理列表</span>
-          <span className="md:hidden text-gray-400">(表格可左右滑动编辑 →)</span>
+      {/* 底部：课程编辑列表 (仿手机抽屉效果) */}
+      <div 
+        className={`bg-white border-t flex flex-col shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)] z-50 transition-[height] duration-500 ease-in-out ${
+          isListExpanded ? 'h-[50%]' : 'h-[30%]'
+        }`}
+      >
+        {/* 抽屉把手 / 标题栏 (点击可切换高度) */}
+        <div 
+          onClick={() => setIsListExpanded(!isListExpanded)}
+          className="relative bg-gray-50 border-b cursor-pointer active:bg-gray-100 transition-colors py-2 flex flex-col items-center justify-center flex-shrink-0 touch-none"
+        >
+          {/* 灰色小横条 (视觉暗示) */}
+          <div className="w-10 h-1 bg-gray-300 rounded-full mb-2"></div>
+          
+          <div className="w-full px-4 flex justify-between items-center text-xs text-gray-500 select-none">
+            <span className="font-bold flex items-center gap-1">
+              📝 课程管理列表 
+              <span className="font-normal text-gray-400">
+                ({isListExpanded ? '点击收起' : '点击展开'})
+              </span>
+            </span>
+            <span className="text-gray-400">表格可左右滑动 →</span>
+          </div>
         </div>
         
-        {/* 关键修改：添加 overflow-x-auto 让表格可横向滚动 */}
+        {/* 表格内容区域 */}
         <div className="flex-1 overflow-auto w-full">
-          <table className="w-full text-left text-xs min-w-[800px]"> {/* min-w-[800px] 强制表格不折叠 */}
+          <table className="w-full text-left text-xs min-w-[800px]">
             <thead className="bg-gray-100 text-gray-600 sticky top-0 z-10 shadow-sm">
               <tr>
                 <th className="p-2 w-10 text-center">👁️</th>
-                <th className="p-2 min-w-[120px]">课程名称</th> {/* 设定最小宽度防止挤压 */}
+                <th className="p-2 min-w-[120px]">课程名称</th>
                 <th className="p-2 w-20">周几</th>
                 <th className="p-2 w-24">开始</th>
                 <th className="p-2 w-24">结束</th>
@@ -391,27 +441,28 @@ export default function CourseScheduler() {
               </tr>
             </thead>
             <tbody>
-              {currentCourses.map(course => (
-                <tr key={course.id} className="border-b hover:bg-blue-50 transition-colors">
-                  {/* ...这里面的 td 内容保持不变... */}
-                  {/* 只是建议给 input 加上 min-w，比如: */}
-                  <td className="p-2 text-center">
-                    <input type="checkbox" checked={course.isVisible} onChange={(e) => updateCourse(course.id, 'isVisible', e.target.checked)} className="w-4 h-4" />
-                  </td>
-                  <td className="p-2"><input value={course.name} onChange={e => updateCourse(course.id, 'name', e.target.value)} className="w-full border rounded px-1 py-1 min-w-[100px]" /></td>
-                  <td className="p-2">
-                    <select value={course.day} onChange={e => updateCourse(course.id, 'day', Number(e.target.value))} className="border rounded py-1 w-full">
-                      {days.map((d, i) => <option key={i} value={i+1}>{d}</option>)}
-                    </select>
-                  </td>
-                  {/* 时间选择器保持原样，它们在手机上会自动弹出滚轮选择 */}
-                  <td className="p-2"><input type="time" value={formatTime(course.startHour)} onChange={e => updateCourse(course.id, 'startHour', timeStrToDecimal(e.target.value))} className="w-full border rounded px-1 py-1" /></td>
-                  <td className="p-2"><input type="time" value={formatTime(course.endHour)} onChange={e => updateCourse(course.id, 'endHour', timeStrToDecimal(e.target.value))} className="w-full border rounded px-1 py-1" /></td>
-                  <td className="p-2"><input type="number" value={course.credit} onChange={e => updateCourse(course.id, 'credit', Number(e.target.value))} className="w-full border rounded px-1 py-1 w-12" /></td>
-                  <td className="p-2"><input value={course.notes} onChange={e => updateCourse(course.id, 'notes', e.target.value)} placeholder="..." className="w-full border rounded px-1 py-1 text-gray-600 min-w-[100px]" /></td>
-                  <td className="p-2"><button onClick={() => deleteCourse(course.id)} className="text-red-500 font-bold p-2">×</button></td>
-                </tr>
-              ))}
+              {currentCourses.length === 0 ? (
+                <tr><td colSpan={8} className="text-center py-8 text-gray-400">暂无课程，请点击右上角添加</td></tr>
+              ) : (
+                currentCourses.map(course => (
+                  <tr key={course.id} className="border-b hover:bg-blue-50 transition-colors">
+                    <td className="p-2 text-center">
+                      <input type="checkbox" checked={course.isVisible} onChange={(e) => updateCourse(course.id, 'isVisible', e.target.checked)} className="w-4 h-4" />
+                    </td>
+                    <td className="p-2"><input value={course.name} onChange={e => updateCourse(course.id, 'name', e.target.value)} className="w-full border rounded px-1 py-1 min-w-[100px]" /></td>
+                    <td className="p-2">
+                      <select value={course.day} onChange={e => updateCourse(course.id, 'day', Number(e.target.value))} className="border rounded py-1 w-full">
+                        {days.map((d, i) => <option key={i} value={i+1}>{d}</option>)}
+                      </select>
+                    </td>
+                    <td className="p-2"><input type="time" value={formatTime(course.startHour)} onChange={e => updateCourse(course.id, 'startHour', timeStrToDecimal(e.target.value))} className="w-full border rounded px-1 py-1" /></td>
+                    <td className="p-2"><input type="time" value={formatTime(course.endHour)} onChange={e => updateCourse(course.id, 'endHour', timeStrToDecimal(e.target.value))} className="w-full border rounded px-1 py-1" /></td>
+                    <td className="p-2"><input type="number" value={course.credit} onChange={e => updateCourse(course.id, 'credit', Number(e.target.value))} className="w-full border rounded px-1 py-1 w-12" /></td>
+                    <td className="p-2"><input value={course.notes} onChange={e => updateCourse(course.id, 'notes', e.target.value)} placeholder="..." className="w-full border rounded px-1 py-1 text-gray-600 min-w-[100px]" /></td>
+                    <td className="p-2"><button onClick={() => deleteCourse(course.id)} className="text-red-500 font-bold p-2">×</button></td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
