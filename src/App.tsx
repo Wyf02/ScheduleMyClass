@@ -93,6 +93,9 @@ const getDailyLayout = (courses: Course[]) => {
 
 export default function CourseScheduler() {
   // --- 状态管理 ---
+    // 编辑弹窗相关状态
+    const [editingCourse, setEditingCourse] = useState<Course | null>(null);
+    const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
   const [semesters, setSemesters] = useState<Semester[]>(() => {
     const saved = localStorage.getItem('my_course_data_v2');
     if (saved) {
@@ -549,10 +552,14 @@ export default function CourseScheduler() {
                           transition: isMoving || isResizing ? 'none' : 'transform 0.1s'
                         }}
                         onMouseDown={(e) => handleMoveStart(e, course)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingCourse(course);
+                          setIsEditDrawerOpen(true);
+                        }}
                       >
                         <div className="font-bold leading-tight truncate">{course.name}</div>
                         <div className="opacity-80 scale-90 origin-left mt-1 truncate">{formatTime(course.startHour)} - {formatTime(course.endHour)}</div>
-                        
                         {/* 调整大小的手柄 */}
                         <div 
                            className="absolute bottom-0 left-0 w-full h-3 cursor-ns-resize flex justify-center items-end pb-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -636,6 +643,58 @@ export default function CourseScheduler() {
           </table>
         </div>
       </div>
-    </div>
+    {/* 右侧编辑弹窗 */}
+    {isEditDrawerOpen && editingCourse && (
+      <div className="fixed top-0 right-0 h-full w-full max-w-xs bg-white shadow-2xl border-l z-[999] flex flex-col animate-slideIn" style={{minWidth:320}}>
+        <div className="flex items-center justify-between p-4 border-b">
+          <div className="font-bold text-lg text-blue-700">编辑日程</div>
+          <button onClick={() => setIsEditDrawerOpen(false)} className="text-gray-400 hover:text-blue-500 text-2xl">×</button>
+        </div>
+        <div className="flex-1 overflow-auto p-4 flex flex-col gap-4">
+          <label className="block">
+            <span className="text-xs text-gray-500">名称</span>
+            <input className="w-full border rounded px-2 py-1 mt-1" value={editingCourse.name} onChange={e => setEditingCourse({...editingCourse, name: e.target.value})} />
+          </label>
+          <label className="block">
+            <span className="text-xs text-gray-500">周几</span>
+            <select className="w-full border rounded px-2 py-1 mt-1" value={editingCourse.day} onChange={e => setEditingCourse({...editingCourse, day: Number(e.target.value)})}>
+              {days.map((d, i) => <option key={i} value={i+1}>{d}</option>)}
+            </select>
+          </label>
+          <label className="block">
+            <span className="text-xs text-gray-500">开始时间</span>
+            <input className="w-full border rounded px-2 py-1 mt-1" type="time" value={formatTime(editingCourse.startHour)} onChange={e => setEditingCourse({...editingCourse, startHour: timeStrToDecimal(e.target.value)})} />
+          </label>
+          <label className="block">
+            <span className="text-xs text-gray-500">结束时间</span>
+            <input className="w-full border rounded px-2 py-1 mt-1" type="time" value={formatTime(editingCourse.endHour)} onChange={e => setEditingCourse({...editingCourse, endHour: timeStrToDecimal(e.target.value)})} />
+          </label>
+          <label className="block">
+            <span className="text-xs text-gray-500">学分</span>
+            <input className="w-full border rounded px-2 py-1 mt-1" type="number" value={editingCourse.credit} onChange={e => setEditingCourse({...editingCourse, credit: Number(e.target.value)})} />
+          </label>
+          <label className="block">
+            <span className="text-xs text-gray-500">备注</span>
+            <input className="w-full border rounded px-2 py-1 mt-1" value={editingCourse.notes} onChange={e => setEditingCourse({...editingCourse, notes: e.target.value})} />
+          </label>
+        </div>
+        <div className="flex gap-2 p-4 border-t">
+          <button className="flex-1 bg-blue-600 text-white rounded px-3 py-2 font-bold hover:bg-blue-700" onClick={() => {
+            updateCourse(editingCourse.id, 'name', editingCourse.name);
+            updateCourse(editingCourse.id, 'day', editingCourse.day);
+            updateCourse(editingCourse.id, 'startHour', editingCourse.startHour);
+            updateCourse(editingCourse.id, 'endHour', editingCourse.endHour);
+            updateCourse(editingCourse.id, 'credit', editingCourse.credit);
+            updateCourse(editingCourse.id, 'notes', editingCourse.notes);
+            setIsEditDrawerOpen(false);
+          }}>保存</button>
+          <button className="flex-1 bg-red-500 text-white rounded px-3 py-2 font-bold hover:bg-red-600" onClick={() => {
+            deleteCourse(editingCourse.id);
+            setIsEditDrawerOpen(false);
+          }}>删除</button>
+        </div>
+      </div>
+    )}
+  </div>
   );
 }
