@@ -680,12 +680,8 @@ export default function CourseScheduler() {
         </div>
         <div className="flex gap-2 p-4 border-t">
           <button className="flex-1 bg-blue-600 text-white rounded px-3 py-2 font-bold hover:bg-blue-700" onClick={() => {
-            updateCourse(editingCourse.id, 'name', editingCourse.name);
-            updateCourse(editingCourse.id, 'day', editingCourse.day);
-            updateCourse(editingCourse.id, 'startHour', editingCourse.startHour);
-            updateCourse(editingCourse.id, 'endHour', editingCourse.endHour);
-            updateCourse(editingCourse.id, 'credit', editingCourse.credit);
-            updateCourse(editingCourse.id, 'notes', editingCourse.notes);
+            // 一次性整体替换该课程
+            updateCurrentCourses(currentCourses.map(c => c.id === editingCourse.id ? { ...editingCourse } : c));
             setIsEditDrawerOpen(false);
           }}>保存</button>
           <button className="flex-1 bg-red-500 text-white rounded px-3 py-2 font-bold hover:bg-red-600" onClick={() => {
